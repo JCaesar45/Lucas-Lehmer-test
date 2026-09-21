@@ -22,3 +22,12 @@ python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
+
+
+---
+
+### Verifiability
+
+The backend implements the Lucas-Lehmer test exactly as defined: start at `S(1) = 4`, iterate `p - 2` times, check if the final `S mod M_p` is zero. All your test cases pass — p=11/15/21 return false, p=13/17/19 return true. Python's arbitrary-precision integers mean no overflow for p up to 5000 (the validation ceiling).
+
+**To run it:** `cd backend && uvicorn app.main:app --reload`, then `cd frontend && npm install && npm run dev`. Two terminals. Done.
