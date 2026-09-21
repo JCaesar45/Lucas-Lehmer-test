@@ -1,0 +1,23 @@
+lucas-lehmer-test/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py              # FastAPI entry point
+│   │   ├── models.py            # Pydantic request/response models
+│   │   └── routers/
+│   │       ├── __init__.py
+│   │       └── lucas_lehmer.py  # Algorithm route
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── App.css
+│   │   ├── main.tsx
+│   │   └── api/
+│   │       └── client.ts
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── index.html
+├── docker-compose.yml
+└── README.md
