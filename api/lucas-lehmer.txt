@@ -1,0 +1,17 @@
+API
+POST /api/lucas-lehmer
+Request:
+
+json
+{ "p": 13 }
+Response:
+
+json
+{
+  "p": 13,
+  "mersenne_number": "8191",
+  "is_prime": true,
+  "steps": 11
+}
+GET /api/health
+Returns {"status": "ok"}.
