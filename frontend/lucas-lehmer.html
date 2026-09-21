@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lucas-Lehmer Primality Test</title>
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --panel: #14141c;
+        --border: #262633;
+        --text: #e8e8ef;
+        --muted: #8a8a9a;
+        --accent: #7c5cff;
+        --prime: #22c98a;
+        --composite: #ff5c7c;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: radial-gradient(
+          circle at 20% 0%,
+          #1a1a2e 0%,
+          var(--bg) 55%
+        );
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 720px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.4rem;
+      }
+
+      h1 span {
+        color: var(--accent);
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+      }
+
+      .subtitle code {
+        background: var(--bg);
+        padding: 0.15rem 0.4rem;
+        border-radius: 5px;
+        font-size: 0.9em;
+        color: var(--accent);
+      }
+
+      form {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      input[type="number"] {
+        flex: 1;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        color: var(--text);
+        font-size: 1rem;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        outline: none;
+      }
+
+      input[type="number"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
+      }
+
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      button {
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.85rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          filter 0.15s;
+      }
+
+      button:hover:not(:disabled) {
+        filter: brightness(1.12);
+      }
+      button:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .result {
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        animation: fadeIn 0.28s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result.prime {
+        border-color: rgba(34, 201, 138, 0.4);
+      }
+      .result.composite {
+        border-color: rgba(255, 92, 124, 0.4);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        margin-bottom: 1.25rem;
+      }
+
+      .result.prime .badge {
+        background: rgba(34, 201, 138, 0.15);
+        color: var(--prime);
+      }
+
+      .result.composite .badge {
+        background: rgba(255, 92, 124, 0.15);
+        color: var(--composite);
+      }
+
+      dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.65rem 1.5rem;
+        font-size: 0.95rem;
+      }
+
+      dt {
+        color: var(--muted);
+      }
+      dd {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        word-break: break-all;
+      }
+
+      .mersenne {
+        color: var(--accent);
+        max-height: 120px;
+        overflow-y: auto;
+      }
+
+      .error {
+        background: rgba(255, 92, 124, 0.1);
+        border: 1px solid rgba(255, 92, 124, 0.35);
+        color: var(--composite);
+        padding: 0.9rem 1.1rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+      }
+
+      footer {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 520px) {
+        .app {
+          padding: 1.75rem;
+        }
+        form {
+          flex-direction: column;
+        }
+        button {
+          width: 100%;
+        }
+        dl {
+          grid-template-columns: 1fr;
+        }
+        dt {
+          margin-top: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>
+        Lucas
+        <span>–</span>
+        Lehmer Test
+      </h1>
+      <p class="subtitle">
+        Check whether
+        <code>2^p − 1</code>
+        is prime for an odd prime
+        <code>p</code>
+        .
+      </p>
+
+      <form id="form">
+        <input
+          id="p"
+          type="number"
+          min="3"
+          max="10000"
+          step="1"
+          value="11"
+          placeholder="Enter odd prime p"
+          required
+        />
+        <button id="submit" type="submit">Run Test</button>
+      </form>
+
+      <div id="error" class="error" hidden></div>
+      <div id="result" hidden></div>
+
+      <footer>
+        <strong>Algorithm:</strong>
+        For an odd prime p, M
+        <sub>p</sub>
+        = 2
+        <sup>p</sup>
+        − 1 is prime iff M
+        <sub>p</sub>
+        divides S(p−1), where S(1) = 4 and S(n+1) = S(n)
+        <sup>2</sup>
+        − 2.
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const form = document.getElementById("form");
+        const input = document.getElementById("p");
+        const submit = document.getElementById("submit");
+        const errorBox = document.getElementById("error");
+        const resultBox = document.getElementById("result");
+
+        // Miller-Rabin style trial division is overkill here; p is small in practice.
+        // For the demo we just do a straightforward odd-divisor scan up to √p.
+        function isOddPrime(n) {
+          if (n === 2) return false;
+          if (n < 3 || n % 2 === 0) return false;
+          for (let i = 3; i * i <= n; i += 2) {
+            if (n % i === 0) return false;
+          }
+          return true;
+        }
+
+        // Core algorithm. Works on BigInt so intermediate squares don't overflow.
+        function lucasLehmer(p) {
+          if (!isOddPrime(p)) {
+            return {
+              isPrime: false,
+              mersenne: null,
+              steps: 0,
+              reason: "p is not an odd prime"
+            };
+          }
+
+          const mersenne = (1n << BigInt(p)) - 1n;
+          let s = 4n;
+          let steps = 0;
+
+          for (let i = 0; i < p - 2; i++) {
+            s = (s * s - 2n) % mersenne;
+            steps++;
+          }
+
+          return { isPrime: s === 0n, mersenne, steps, reason: null };
+        }
+
+        function renderResult({ isPrime, mersenne, steps, reason }, p) {
+          const cls = isPrime ? "prime" : "composite";
+          const label = isPrime ? "Prime ✓" : "Composite ✗";
+
+          const mersenneDisplay = mersenne !== null ? mersenne.toString() : "—";
+
+          resultBox.className = `result ${cls}`;
+          resultBox.hidden = false;
+          resultBox.innerHTML = `
+      <span class="badge">${label}</span>
+      <dl>
+        <dt>p</dt>
+        <dd>${p}</dd>
+        <dt>Mersenne number 2<sup>p</sup> − 1</dt>
+        <dd class="mersenne">${mersenneDisplay}</dd>
+        <dt>Iterations</dt>
+        <dd>${steps}</dd>
+        ${reason ? `<dt>Note</dt><dd>${reason}</dd>` : ""}
+      </dl>
+    `;
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          errorBox.hidden = true;
+          resultBox.hidden = true;
+
+          const raw = input.value.trim();
+          const p = Number(raw);
+
+          if (!Number.isInteger(p) || p < 3 || p > 10000) {
+            errorBox.textContent = "Enter an integer between 3 and 10000.";
+            errorBox.hidden = false;
+            return;
+          }
+
+          submit.disabled = true;
+          submit.textContent = "Computing…";
+
+          // Yield to the browser so the button state paints before we block.
+          setTimeout(function () {
+            try {
+              const result = lucasLehmer(p);
+              renderResult(result, p);
+            } catch (err) {
+              errorBox.textContent = "Computation failed: " + err.message;
+              errorBox.hidden = false;
+            } finally {
+              submit.disabled = false;
+              submit.textContent = "Run Test";
+            }
+          }, 20);
+        });
+      })();
+    </script>
+  </body>
+</html>
